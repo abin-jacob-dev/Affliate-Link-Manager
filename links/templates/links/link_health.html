@@ -1,0 +1,237 @@
+{% extends "links/base.html" %}
+{% load static %}
+{% load link_tags %}
+
+{% block title %}Link Health - LinkForge{% endblock %}
+{% block page_title %}Link Health Center{% endblock %}
+
+{% block content %}
+<!-- Smart Alert Summary -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm hover:bg-[#212121] transition-all">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="premium-icon premium-icon-md premium-icon-success">
+                <i class="iconoir-check-circle text-[#22C55E]"></i>
+            </div>
+            <span class="text-xs font-medium text-[#71717A] uppercase tracking-wider">Healthy</span>
+        </div>
+        <p class="text-3xl font-bold text-[#EDEDED]">{{ healthy_count|default:0 }}</p>
+        <p class="text-xs text-[#71717A] mt-1">{{ avg_health_score|default:0 }} avg score</p>
+    </div>
+
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm hover:bg-[#212121] transition-all">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="premium-icon premium-icon-md premium-icon-warning">
+                <i class="iconoir-warning-triangle text-[#F59E0B]"></i>
+            </div>
+            <span class="text-xs font-medium text-[#71717A] uppercase tracking-wider">Warning</span>
+        </div>
+        <p class="text-3xl font-bold text-[#EDEDED]">{{ warning_count|default:0 }}</p>
+        <p class="text-xs text-[#71717A] mt-1">needs review</p>
+    </div>
+
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm hover:bg-[#212121] transition-all">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="premium-icon premium-icon-md premium-icon-error">
+                <i class="iconoir-xmark-circle text-[#EF4444]"></i>
+            </div>
+            <span class="text-xs font-medium text-[#71717A] uppercase tracking-wider">Broken</span>
+        </div>
+        <p class="text-3xl font-bold text-[#EDEDED]">{{ broken_count|default:0 }}</p>
+        <p class="text-xs text-[#71717A] mt-1">needs immediate action</p>
+    </div>
+
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm hover:bg-[#212121] transition-all">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="premium-icon premium-icon-md">
+                <i class="iconoir-clock text-[#A1A1AA]"></i>
+            </div>
+            <span class="text-xs font-medium text-[#71717A] uppercase tracking-wider">Stale</span>
+        </div>
+        <p class="text-3xl font-bold text-[#EDEDED]">{{ stale_count|default:0 }}</p>
+        <p class="text-xs text-[#71717A] mt-1">not reviewed in 6+ months</p>
+    </div>
+</div>
+
+<!-- Action Bar -->
+<div class="flex items-center justify-between mb-6">
+    <div>
+        <h3 class="text-lg font-semibold text-[#EDEDED]">Links Needing Attention</h3>
+        <p class="text-sm text-[#71717A] mt-1">Auto-scanned links that need your attention</p>
+    </div>
+    <div class="flex gap-3">
+        <a href="?scan=1" onclick="event.preventDefault(); startScan();" class="inline-flex items-center gap-2 px-4 py-2 bg-[#212121] text-[#EDEDED] text-sm font-medium rounded-lg hover:bg-[#2A2A2A] transition-all border border-[rgba(255,255,255,0.10)]">
+            <i class="iconoir-iris-scan text-xs"></i>
+            Scan Now
+        </a>
+    </div>
+</div>
+
+{% if needs_attention %}
+<!-- Issues Table -->
+<div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="text-left text-xs font-medium text-[#71717A] uppercase tracking-wider border-b border-[rgba(255,255,255,0.08)]">
+                    <th class="px-6 py-4">Link</th>
+                    <th class="px-4 py-4">Status</th>
+                    <th class="px-4 py-4">Score</th>
+                    <th class="px-4 py-4">Issues</th>
+                    <th class="px-4 py-4">Suggestion</th>
+                    <th class="px-4 py-4 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-[rgba(255,255,255,0.06)]">
+                {% for link in needs_attention %}
+                <tr class="hover:bg-[rgba(255,255,255,0.03)] transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div>
+                                <a href="{% url 'links:link_analytics' pk=link.id %}" class="text-sm font-semibold text-[#EDEDED] hover:text-white transition-colors">
+                                    {{ link.campaign_name }}
+                                </a>
+                                <p class="text-xs text-[#71717A] font-mono mt-0.5">/{{ link.slug }}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-4 py-4">
+                        {% if link.health.status == 'broken' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[rgba(239,68,68,0.08)] text-[#EF4444]">
+                            <i class="iconoir-xmark-circle text-xs"></i>
+                            Broken
+                        </span>
+                        {% elif link.health.status == 'warning' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[rgba(245,158,11,0.08)] text-[#F59E0B]">
+                            <i class="iconoir-warning-triangle text-xs"></i>
+                            Warning
+                        </span>
+                        {% elif link.health.status == 'stale' %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[rgba(59,130,246,0.08)] text-[#3B82F6]">
+                            <i class="iconoir-clock text-xs"></i>
+                            Stale
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[rgba(34,197,94,0.08)] text-[#22C55E]">
+                            <i class="iconoir-check-circle text-xs"></i>
+                            Healthy
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-4">
+                        <div class="flex items-center gap-2">
+                            <div class="relative w-16 h-2 bg-[#333333] rounded-full overflow-hidden">
+                                <div class="absolute inset-y-0 left-0 rounded-full transition-all duration-500 {% if link.health.health_score >= 70 %}bg-[#22C55E]{% elif link.health.health_score >= 40 %}bg-[#F59E0B]{% else %}bg-[#EF4444]{% endif %}" style="width: {{ link.health.health_score }}%"></div>
+                            </div>
+                            <span class="text-xs font-semibold {% if link.health.health_score >= 70 %}text-[#22C55E]{% elif link.health.health_score >= 40 %}text-[#F59E0B]{% else %}text-[#EF4444]{% endif %}">{{ link.health.health_score }}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-4">
+                        <div class="flex flex-col gap-1">
+                            {% for issue in link.health.parsed_issues|slice:":2" %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium {% if issue.severity == 'critical' %}bg-[rgba(239,68,68,0.08)] text-[#EF4444]{% else %}bg-[rgba(255,255,255,0.06)] text-[#A1A1AA]{% endif %}">
+                                {{ issue.message }}
+                            </span>
+                            {% endfor %}
+                            {% if link.health.issues_count > 2 %}
+                            <span class="text-[10px] text-[#71717A]">+{{ link.health.issues_count|add:"-2" }} more</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-4 py-4">
+                        {% if link.health.suggested_fix %}
+                        <p class="text-xs text-[#A1A1AA] max-w-[200px] truncate" title="{{ link.health.suggested_fix }}">{{ link.health.suggested_fix }}</p>
+                        {% else %}
+                        <span class="text-xs text-[#555555]">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-4 text-right">
+                        <div class="flex items-center justify-end gap-1">
+                            <a href="{% url 'links:link_edit' pk=link.id %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-[#71717A] hover:text-[#F59E0B] hover:bg-[rgba(245,158,11,0.08)] transition-all" title="Edit link">
+                                <i class="iconoir-edit-pencil text-xs"></i>
+                            </a>
+                            <a href="{{ link.get_short_url }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-[#71717A] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.06)] transition-all" title="Open destination">
+                                <i class="iconoir-new-tab text-xs"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<!-- Empty State -->
+<div class="text-center py-16 bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl">
+    <div class="premium-icon premium-icon-2xl premium-icon-success premium-icon-circle mx-auto mb-6">
+        <i class="iconoir-check-circle text-[#22C55E] text-2xl"></i>
+    </div>
+    <h3 class="text-xl font-semibold text-[#EDEDED] mb-2">All clear! No issues found</h3>
+    <p class="text-[#71717A] mb-2">All your links are healthy and up to date.</p>
+    <p class="text-[#71717A] text-sm">{{ healthy_count|default:0 }} healthy links &middot; {{ total_links|default:0 }} total</p>
+</div>
+{% endif %}
+
+<!-- Unscanned Notice -->
+{% if unscanned_count > 0 %}
+<div class="mt-6 p-4 rounded-xl bg-[rgba(59,130,246,0.08)] border border-[rgba(59,130,246,0.15)]">
+    <div class="flex items-start gap-3">
+        <i class="iconoir-info-circle text-[#3B82F6] mt-0.5"></i>
+        <div>
+            <p class="text-sm font-medium text-[#93C5FD]">{{ unscanned_count }} links haven't been scanned yet</p>
+            <p class="text-xs text-[#60A5FA] mt-1">Click "Scan Now" above to check all your links for health issues.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Global Scan Loading Overlay -->
+<div id="scan-overlay" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-[#0A0A0A]/80 backdrop-blur-md"></div>
+    <div class="relative flex flex-col items-center justify-center min-h-full">
+        <div class="scan-spinner mb-6">
+            <i class="iconoir-iris-scan text-[#EDEDED] text-4xl"></i>
+        </div>
+        <p class="text-lg font-semibold text-[#EDEDED] mb-2">Scanning all links...</p>
+        <p class="text-sm text-[#71717A]">Checking HTTP status, redirects, SSL, and click trends</p>
+        <div class="mt-8 flex gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#22C55E] scan-dot"></span>
+            <span class="w-2 h-2 rounded-full bg-[#F59E0B] scan-dot" style="animation-delay: 0.2s"></span>
+            <span class="w-2 h-2 rounded-full bg-[#3B82F6] scan-dot" style="animation-delay: 0.4s"></span>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes scanSpin {
+        0% { transform: rotate(0deg); opacity: 0.6; }
+        50% { transform: rotate(180deg); opacity: 1; }
+        100% { transform: rotate(360deg); opacity: 0.6; }
+    }
+    @keyframes scanPulse {
+        0%, 100% { transform: scale(1); opacity: 0.4; }
+        50% { transform: scale(1.15); opacity: 1; }
+    }
+    .scan-spinner {
+        animation: scanSpin 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.08));
+    }
+    .scan-dot {
+        animation: scanPulse 1.2s ease-in-out infinite;
+    }
+</style>
+
+<script>
+    function startScan() {
+        var overlay = document.getElementById('scan-overlay');
+        if (overlay) {
+            overlay.classList.remove('hidden');
+        }
+        setTimeout(function() {
+            window.location.href = '?scan=1';
+        }, 300);
+    }
+</script>
+
+{% endblock %}

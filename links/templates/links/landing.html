@@ -1,0 +1,191 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkForge - Affiliate URL Shortener & Analytics</title>
+    <meta name="description" content="Shorten your affiliate links with powerful analytics, QR codes, and real-time tracking.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/css/iconoir.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'links/css/style.css' %}">
+</head>
+<body class="font-['Inter'] antialiased bg-[#0A0A0A] text-[#EDEDED]">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-[#0A0A0A]/80 backdrop-blur-xl border-b border-[rgba(255,255,255,0.08)]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="premium-icon premium-icon-md premium-icon-em">
+                        <i class="iconoir-link text-[#EDEDED]"></i>
+                    </div>
+                    <span class="text-xl font-bold text-[#EDEDED]">LinkForge</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="{% url 'links:dashboard' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-[#212121] text-[#EDEDED] text-sm font-medium rounded-xl hover:bg-[#2A2A2A] transition-all duration-200 border border-[rgba(255,255,255,0.10)]">
+                        Go to Dashboard
+                        <i class="iconoir-arrow-right text-xs"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-4xl mx-auto">
+                <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.10)] text-sm font-medium text-[#A1A1AA] mb-8">
+                    <span class="premium-icon premium-icon-sm premium-icon-circle premium-icon-pulse">
+                        <span class="w-1.5 h-1.5 rounded-full bg-[#A1A1AA]"></span>
+                    </span>
+                    The Premium Affiliate URL Shortener
+                </div>
+                <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-[#EDEDED] leading-tight mb-6">
+                    Shorten. Track.
+                    <span class="text-[#A1A1AA]">Optimize.</span>
+                </h1>
+                <p class="text-xl text-[#71717A] max-w-2xl mx-auto mb-10">
+                    Transform your long affiliate links into clean, trackable short URLs. 
+                    Get powerful analytics, automatic QR codes, and real-time click tracking — all in one place.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="{% url 'links:dashboard' %}" class="inline-flex items-center gap-3 px-8 py-4 bg-[#212121] text-[#EDEDED] text-base font-semibold rounded-xl hover:bg-[#2A2A2A] transition-all duration-200 border border-[rgba(255,255,255,0.10)] hover:shadow-lg hover:-translate-y-0.5 group">
+                        Get Started Free
+                        <span class="premium-icon premium-icon-sm premium-icon-static pointer-events-none">
+                            <i class="iconoir-arrow-right text-[#A1A1AA]"></i>
+                        </span>
+                    </a>
+                    <a href="{% url 'links:link_create' %}" class="inline-flex items-center gap-3 px-8 py-4 bg-transparent text-[#A1A1AA] text-base font-semibold rounded-xl border border-[rgba(255,255,255,0.10)] hover:bg-[rgba(255,255,255,0.05)] hover:text-[#EDEDED] transition-all duration-200 hover:-translate-y-0.5 group">
+                        <span class="premium-icon premium-icon-sm premium-icon-static pointer-events-none">
+                            <i class="iconoir-plus text-[#A1A1AA]"></i>
+                        </span>
+                        Create a Link
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Grid -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A] border-t border-[rgba(255,255,255,0.06)]">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-[#EDEDED] mb-4">Everything you need to manage affiliate links</h2>
+                <p class="text-lg text-[#71717A] max-w-2xl mx-auto">Powerful features designed for affiliate marketers who want to maximize their campaigns.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="group p-8 rounded-2xl bg-[#171717] hover:bg-[#212121] border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.12)] transition-all duration-300 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1">
+                    <div class="premium-icon premium-icon-lg mb-5">
+                        <i class="iconoir-link text-[#A1A1AA]"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-[#EDEDED] mb-2">Smart Link Shortening</h3>
+                    <p class="text-[#71717A] leading-relaxed">Create short, memorable URLs from any affiliate link. Edit the destination anytime without changing the short link.</p>
+                </div>
+
+                <div class="group p-8 rounded-2xl bg-[#171717] hover:bg-[#212121] border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.12)] transition-all duration-300 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1">
+                    <div class="premium-icon premium-icon-lg mb-5">
+                        <i class="iconoir-stats-up-square text-[#A1A1AA]"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-[#EDEDED] mb-2">Detailed Analytics</h3>
+                    <p class="text-[#71717A] leading-relaxed">Track every click with detailed data including location, browser, device, referrer, and UTM parameters.</p>
+                </div>
+
+                <div class="group p-8 rounded-2xl bg-[#171717] hover:bg-[#212121] border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.12)] transition-all duration-300 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1">
+                    <div class="premium-icon premium-icon-lg mb-5">
+                        <i class="iconoir-qr-code text-[#A1A1AA]"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-[#EDEDED] mb-2">QR Code Generation</h3>
+                    <p class="text-[#71717A] leading-relaxed">Every short URL gets an automatic QR code. Perfect for print materials, packaging, and offline marketing.</p>
+                </div>
+
+                <div class="group p-8 rounded-2xl bg-[#171717] hover:bg-[#212121] border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.12)] transition-all duration-300 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1">
+                    <div class="premium-icon premium-icon-lg mb-5">
+                        <i class="iconoir-eye text-[#A1A1AA]"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-[#EDEDED] mb-2">Real-time Tracking</h3>
+                    <p class="text-[#71717A] leading-relaxed">Monitor your links with real-time click data. See daily, weekly, and monthly trends at a glance.</p>
+                </div>
+
+                <div class="group p-8 rounded-2xl bg-[#171717] hover:bg-[#212121] border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.12)] transition-all duration-300 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1">
+                    <div class="premium-icon premium-icon-lg mb-5">
+                        <i class="iconoir-search text-[#A1A1AA]"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-[#EDEDED] mb-2">Fast Search</h3>
+                    <p class="text-[#71717A] leading-relaxed">Quickly find any link by campaign name, slug, or destination URL. Lightning-fast search with keyboard shortcuts.</p>
+                </div>
+
+                <div class="group p-8 rounded-2xl bg-[#171717] hover:bg-[#212121] border border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.12)] transition-all duration-300 hover:shadow-xl hover:shadow-black/20 hover:-translate-y-1">
+                    <div class="premium-icon premium-icon-lg mb-5">
+                        <i class="iconoir-palette text-[#A1A1AA]"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-[#EDEDED] mb-2">Premium Dark Mode</h3>
+                    <p class="text-[#71717A] leading-relaxed">Always-on premium dark mode inspired by ChatGPT. Easy on the eyes, focused, and beautifully consistent.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A]">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-[#EDEDED] mb-4">How it works</h2>
+                <p class="text-lg text-[#71717A] max-w-2xl mx-auto">Three simple steps to start tracking your affiliate links.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div class="text-center">
+                    <div class="premium-icon premium-icon-xl premium-icon-em mx-auto mb-6 text-2xl font-bold text-[#A1A1AA]">1</div>
+                    <h3 class="text-lg font-semibold text-[#EDEDED] mb-2">Paste Your Link</h3>
+                    <p class="text-[#71717A]">Enter your long affiliate URL and give it a memorable campaign name.</p>
+                </div>
+                <div class="text-center">
+                    <div class="premium-icon premium-icon-xl premium-icon-em mx-auto mb-6 text-2xl font-bold text-[#A1A1AA]">2</div>
+                    <h3 class="text-lg font-semibold text-[#EDEDED] mb-2">Get Your Short URL</h3>
+                    <p class="text-[#71717A]">We generate a clean short URL and QR code instantly, ready to share.</p>
+                </div>
+                <div class="text-center">
+                    <div class="premium-icon premium-icon-xl premium-icon-em mx-auto mb-6 text-2xl font-bold text-[#A1A1AA]">3</div>
+                    <h3 class="text-lg font-semibold text-[#EDEDED] mb-2">Track Performance</h3>
+                    <p class="text-[#71717A]">Monitor clicks, locations, devices, and more with beautiful analytics dashboards.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 bg-[#111111] border-t border-[rgba(255,255,255,0.06)]">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl sm:text-4xl font-bold text-[#EDEDED] mb-4">Ready to optimize your affiliate links?</h2>
+            <p class="text-lg text-[#71717A] mb-8">Start creating short links in seconds. No sign-up required.</p>
+            <a href="{% url 'links:dashboard' %}" class="inline-flex items-center gap-3 px-8 py-4 bg-[#212121] text-[#EDEDED] text-base font-semibold rounded-xl hover:bg-[#2A2A2A] transition-all duration-200 border border-[rgba(255,255,255,0.10)] hover:shadow-lg hover:-translate-y-0.5 group">
+                Get Started Now
+                <span class="premium-icon premium-icon-sm premium-icon-static pointer-events-none">
+                    <i class="iconoir-rocket text-[#A1A1AA]"></i>
+                </span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-4 sm:px-6 lg:px-8 bg-[#0A0A0A] border-t border-[rgba(255,255,255,0.06)]">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="premium-icon premium-icon-md premium-icon-em" style="width:1.75rem;height:1.75rem;border-radius:0.5rem;">
+                    <i class="iconoir-link text-[#EDEDED] text-xs"></i>
+                </div>
+                <span class="text-sm font-semibold text-[#EDEDED]">LinkForge</span>
+            </div>
+            <p class="text-sm text-[#71717A]">Built for affiliate marketers. Shorten smarter.</p>
+        </div>
+    </footer>
+
+    <!-- Theme JS -->
+    <script src="{% static 'links/js/theme.js' %}"></script>
+    <!-- No theme toggle needed — always dark mode -->
+</body>
+</html>

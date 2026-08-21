@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+{% load static %}
+{% load link_tags %}
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Affiliate URL Shortener{% endblock %}</title>
+    <meta name="description" content="Shorten your affiliate links with powerful analytics and QR codes">
+
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Iconoir (Free Icons via CDN) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/css/iconoir.css" crossorigin="anonymous">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="font-['Inter'] antialiased bg-[#0A0A0A] text-[#EDEDED]">
+    <!-- Toast Messages (Django server messages - consistent style with JS toasts) -->
+    {% if messages %}
+    <div class="fixed bottom-4 right-4 z-50 space-y-3" id="toast-container">
+        {% for message in messages %}
+        {% with message.tags as tag %}
+        {% with tag|default:'info' as msg_type %}
+        <div class="min-w-[320px] p-4 rounded-xl border bg-[#212121] shadow-lg backdrop-blur-xl" role="alert" style="animation: slideUp 0.25s ease-out forwards;">
+            <div class="flex items-center gap-3">
+                <i class="{% if msg_type == 'success' %}iconoir-check-circle text-[#22C55E]{% elif msg_type == 'error' %}iconoir-xmark-circle text-[#EF4444]{% else %}iconoir-info-circle text-[#3B82F6]{% endif %} text-lg flex-shrink-0"></i>
+                <p class="text-sm font-medium text-[#EDEDED] flex-1">{{ message }}</p>
+                <button onclick="dismissToast(this)" class="text-[#71717A] hover:text-[#EDEDED] transition-colors flex-shrink-0">
+                    <i class="iconoir-xmark text-base"></i>
+                </button>
+            </div>
+        </div>
+        {% endwith %}
+        {% endwith %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Sidebar -->
+    <aside class="fixed inset-y-0 left-0 z-30 w-64 bg-[#0A0A0A] border-r border-[rgba(255,255,255,0.08)] transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out" id="sidebar">
+        <div class="flex items-center gap-3 px-6 py-5 border-b border-[rgba(255,255,255,0.08)]">
+            <div class="premium-icon premium-icon-md premium-icon-em">
+                <i class="iconoir-link text-[#EDEDED]"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-[#EDEDED]">LinkForge</h1>
+                <p class="text-xs text-[#A1A1AA]">Affiliate URL Manager</p>
+            </div>
+        </div>
+
+        <nav class="px-3 py-4 space-y-1">
+            <a href="{% url 'links:dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#A1A1AA] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#EDEDED] transition-all {% if active_tab == 'dashboard' %}bg-[rgba(255,255,255,0.08)] text-[#EDEDED] font-semibold{% endif %}">
+                <span class="premium-icon premium-icon-sm premium-icon-static">
+                    <i class="iconoir-dashboard-speed"></i>
+                </span>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{% url 'links:links_list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#A1A1AA] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#EDEDED] transition-all {% if active_tab == 'links' %}bg-[rgba(255,255,255,0.08)] text-[#EDEDED] font-semibold{% endif %}">
+                <span class="premium-icon premium-icon-sm premium-icon-static">
+                    <i class="iconoir-link"></i>
+                </span>
+                <span>All Links</span>
+            </a>
+
+            <a href="{% url 'links:link_health' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#A1A1AA] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#EDEDED] transition-all {% if active_tab == 'health' %}bg-[rgba(255,255,255,0.08)] text-[#EDEDED] font-semibold{% endif %}">
+                <span class="premium-icon premium-icon-sm premium-icon-static">
+                    <i class="iconoir-health-shield"></i>
+                </span>
+                <span>Link Health</span>
+            </a>
+
+            <a href="{% url 'links:link_create' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#A1A1AA] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#EDEDED] transition-all {% if active_tab == 'create' %}bg-[rgba(255,255,255,0.08)] text-[#EDEDED] font-semibold{% endif %}">
+                <span class="premium-icon premium-icon-sm premium-icon-static">
+                    <i class="iconoir-plus"></i>
+                </span>
+                <span>Create Link</span>
+            </a>
+
+            <a href="{% url 'links:settings' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#A1A1AA] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#EDEDED] transition-all {% if active_tab == 'settings' %}bg-[rgba(255,255,255,0.08)] text-[#EDEDED] font-semibold{% endif %}">
+                <span class="premium-icon premium-icon-sm premium-icon-static">
+                    <i class="iconoir-settings"></i>
+                </span>
+                <span>Settings</span>
+            </a>
+        </nav>
+
+
+    </aside>
+
+    <!-- Mobile overlay -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-20 hidden lg:hidden" id="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <div class="lg:pl-64 overflow-x-hidden">
+        <!-- Top Navigation -->
+        <header class="sticky top-0 z-10 bg-[#0A0A0A]/80 backdrop-blur-xl border-b border-[rgba(255,255,255,0.08)]">
+            <div class="flex items-center justify-between px-4 sm:px-6 py-3">
+                <div class="flex items-center gap-4">
+                    <button id="sidebar-toggle" class="lg:hidden p-2 rounded-lg text-[#A1A1AA] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.06)] transition-all">
+                        <i class="iconoir-menu text-lg"></i>
+                    </button>
+                    <h2 class="text-lg font-semibold text-[#EDEDED]">{% block page_title %}Dashboard{% endblock %}</h2>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <!-- Search Button -->
+                    <button id="search-toggle" class="p-2 rounded-lg text-[#A1A1AA] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.06)] transition-all" title="Search (Ctrl+K)">
+                        <i class="iconoir-search"></i>
+                    </button>
+
+                    <!-- Create Link Button -->
+                    <a href="{% url 'links:link_create' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-[#212121] text-[#EDEDED] text-sm font-medium rounded-lg hover:bg-[#2A2A2A] transition-all border border-[rgba(255,255,255,0.10)] hidden sm:flex">
+                        <i class="iconoir-plus text-xs"></i>
+                        New Link
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="p-4 sm:p-6 lg:p-8">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="search-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="search-modal-backdrop"></div>
+        <div class="flex items-start justify-center pt-[15vh] px-4">
+            <div class="w-full max-w-xl bg-[#171717] rounded-2xl shadow-2xl shadow-black/40 border border-[rgba(255,255,255,0.10)] overflow-hidden">
+                <form action="{% url 'links:search' %}" method="GET" class="relative">
+                    <div class="flex items-center px-4 border-b border-[rgba(255,255,255,0.08)]">
+                        <i class="iconoir-search text-[#A1A1AA] flex-shrink-0"></i>
+                        <input type="text" name="q" placeholder="Search links by name, slug, or URL..." class="w-full px-3 py-4 bg-transparent border-none outline-none text-[#EDEDED] placeholder-[#71717A] text-sm" autofocus>
+                        <kbd class="hidden sm:inline-flex items-center px-2 py-1 rounded-md bg-[#1A1A1A] text-xs text-[#71717A] font-mono border border-[rgba(255,255,255,0.08)]">ESC</kbd>
+                    </div>
+                </form>
+                <div class="px-4 py-3">
+                    <p class="text-xs text-[#71717A]">Search by campaign name, short URL slug, or destination URL</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theme initialization (inline, runs before page render) -->
+    <script src="{% static 'links/js/theme.js' %}"></script>
+
+    <!-- Scripts at bottom -->
+    <script src="{% static 'links/js/main.js' %}"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sidebar toggle
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const toggle = document.getElementById('sidebar-toggle');
+
+        if (toggle) {
+            toggle.addEventListener('click', function() {
+                sidebar.classList.toggle('-translate-x-full');
+                if (overlay) overlay.classList.toggle('hidden');
+                document.body.classList.toggle('overflow-hidden');
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            });
+        }
+
+        // Search modal
+        const searchToggle = document.getElementById('search-toggle');
+        const searchModal = document.getElementById('search-modal');
+        const searchBackdrop = document.getElementById('search-modal-backdrop');
+        const searchInput = searchModal?.querySelector('input');
+
+        if (searchToggle) {
+            searchToggle.addEventListener('click', function() {
+                searchModal.classList.remove('hidden');
+                setTimeout(() => searchInput?.focus(), 100);
+            });
+        }
+
+        if (searchBackdrop) {
+            searchBackdrop.addEventListener('click', function() {
+                searchModal.classList.add('hidden');
+            });
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                searchModal?.classList.add('hidden');
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchModal?.classList.remove('hidden');
+                setTimeout(() => searchInput?.focus(), 100);
+            }
+        });
+    });
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

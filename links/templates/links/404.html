@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found | LinkForge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/css/iconoir.css" crossorigin="anonymous">
+</head>
+<body class="font-['Inter'] antialiased bg-[#0A0A0A] text-[#EDEDED] min-h-screen flex items-center justify-center">
+    <div class="text-center px-4">
+        <div class="premium-icon premium-icon-2xl premium-icon-em premium-icon-circle mx-auto mb-8">
+            <span class="text-5xl font-bold text-[#A1A1AA]">404</span>
+        </div>
+        <h1 class="text-3xl font-bold text-[#EDEDED] mb-3">Page not found</h1>
+        <p class="text-[#71717A] mb-8 max-w-md mx-auto">The page you're looking for doesn't exist or has been moved. Check the URL or head back to the dashboard.</p>
+        <a href="{% url 'links:dashboard' %}" class="inline-flex items-center gap-2 px-6 py-3 bg-[#212121] text-[#EDEDED] text-sm font-medium rounded-xl hover:bg-[#2A2A2A] transition-all border border-[rgba(255,255,255,0.10)]">
+            <i class="iconoir-home"></i>
+            Back to Dashboard
+        </a>
+    </div>
+</body>
+</html>

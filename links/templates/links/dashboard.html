@@ -1,0 +1,204 @@
+{% extends "links/base.html" %}
+{% load static %}
+{% load link_tags %}
+
+{% block title %}Dashboard - LinkForge{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Smart Alerts -->
+{% if smart_alerts %}
+<div class="mb-8 space-y-3">
+    {% for alert in smart_alerts %}
+    <a href="{% url alert.url %}" class="flex items-center gap-3 px-4 py-3 rounded-xl {{ alert.bg }} {{ alert.border }} border hover:opacity-80 transition-all group">
+        <i class="{{ alert.icon }} {{ alert.color }} text-lg"></i>
+        <span class="flex-1 text-sm font-medium text-[#EDEDED]">
+            <strong class="{{ alert.color }}">{{ alert.count }}</strong> {{ alert.label }}
+        </span>
+        <span class="text-xs text-[#71717A] group-hover:text-[#EDEDED] transition-colors">View all &rarr;</span>
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Stats Cards -->
+<!-- Stats Cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm hover:bg-[#212121] hover:border-[rgba(255,255,255,0.12)] transition-all">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="premium-icon premium-icon-md">
+                <i class="iconoir-link text-[#A1A1AA]"></i>
+            </div>
+            <span class="text-xs font-medium text-[#71717A] uppercase tracking-wider">Total Links</span>
+        </div>
+        <p class="text-3xl font-bold text-[#EDEDED]">{{ total_links|default:0 }}</p>
+        <p class="text-xs text-[#71717A] mt-1">{{ active_links|default:0 }} active</p>
+    </div>
+
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm hover:bg-[#212121] hover:border-[rgba(255,255,255,0.12)] transition-all">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="premium-icon premium-icon-md">
+                <i class="iconoir-graph-up text-[#A1A1AA]"></i>
+            </div>
+            <span class="text-xs font-medium text-[#71717A] uppercase tracking-wider">Today</span>
+        </div>
+        <p class="text-3xl font-bold text-[#EDEDED]">{{ today_clicks|default:0|format_number }}</p>
+        <p class="text-xs text-[#71717A] mt-1">clicks today</p>
+    </div>
+
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm hover:bg-[#212121] hover:border-[rgba(255,255,255,0.12)] transition-all">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="premium-icon premium-icon-md">
+                <i class="iconoir-calendar text-[#A1A1AA]"></i>
+            </div>
+            <span class="text-xs font-medium text-[#71717A] uppercase tracking-wider">This Week</span>
+        </div>
+        <p class="text-3xl font-bold text-[#EDEDED]">{{ week_clicks|default:0|format_number }}</p>
+        <p class="text-xs text-[#71717A] mt-1">clicks this week</p>
+    </div>
+
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm hover:bg-[#212121] hover:border-[rgba(255,255,255,0.12)] transition-all">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="premium-icon premium-icon-md">
+                <i class="iconoir-archery-match text-[#A1A1AA]"></i>
+            </div>
+            <span class="text-xs font-medium text-[#71717A] uppercase tracking-wider">Total</span>
+        </div>
+        <p class="text-3xl font-bold text-[#EDEDED]">{{ total_clicks|default:0|format_number }}</p>
+        <p class="text-xs text-[#71717A] mt-1">{{ month_clicks|default:0|format_number }} this month</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Chart -->
+    <div class="lg:col-span-2 bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-[#EDEDED]">Click Analytics</h3>
+            <div class="flex gap-2">
+                <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-[#71717A] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.06)] transition-all bg-[#212121] text-[#EDEDED] border border-[rgba(255,255,255,0.10)]" data-days="7">7D</button>
+                <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-[#71717A] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.06)] transition-all" data-days="30">30D</button>
+                <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-[#71717A] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.06)] transition-all" data-days="90">90D</button>
+            </div>
+        </div>
+        <div class="relative h-[250px]">
+            <canvas id="clicksChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Top Links -->
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-[#EDEDED] mb-4">Top Links</h3>
+        {% if top_links %}
+        <div class="space-y-3">
+            {% for link in top_links %}
+            <div class="flex items-center justify-between p-3 rounded-xl bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] transition-colors">
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-[#EDEDED] truncate">{{ link.campaign_name }}</p>
+                    <p class="text-xs text-[#71717A] font-mono">/{{ link.slug }}</p>
+                </div>
+                <div class="text-right ml-3">
+                    <p class="text-sm font-semibold text-[#EDEDED]">{{ link.click_count|default:0|format_number }}</p>
+                    <p class="text-xs text-[#71717A]">clicks</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-8">
+            <div class="premium-icon premium-icon-lg premium-icon-circle mx-auto mb-3">
+                <i class="iconoir-link text-[#A1A1AA]"></i>
+            </div>
+            <p class="text-sm text-[#71717A]">No links yet</p>
+            <a href="{% url 'links:link_create' %}" class="text-sm text-[#A1A1AA] hover:text-[#EDEDED] mt-1 inline-block">Create your first link</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Top Referrers -->
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-[#EDEDED] mb-4">Top Referrers</h3>
+        {% if top_referrers %}
+        <div class="space-y-2">
+            {% for ref in top_referrers %}
+            <div class="flex items-center justify-between py-2">
+                <span class="text-sm text-[#A1A1AA] truncate max-w-[70%]">{{ ref.referrer|truncate_url:40 }}</span>
+                <span class="text-sm font-medium text-[#EDEDED]">{{ ref.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-[#71717A] text-center py-8">No referrer data yet</p>
+        {% endif %}
+    </div>
+
+    <!-- Top Countries -->
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-[#EDEDED] mb-4">Top Countries</h3>
+        {% if top_countries %}
+        <div class="space-y-2">
+            {% for country in top_countries %}
+            <div class="flex items-center justify-between py-2">
+                <span class="text-sm text-[#A1A1AA]">{{ country.country }}</span>
+                <span class="text-sm font-medium text-[#EDEDED]">{{ country.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-[#71717A] text-center py-8">No location data yet</p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Clicks -->
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-[#EDEDED] mb-4">Recent Clicks</h3>
+        {% if recent_clicks %}
+        <div class="space-y-2">
+            {% for click in recent_clicks %}
+            <div class="flex items-center justify-between py-2">
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm text-[#EDEDED] truncate font-medium">{{ click.link.campaign_name }}</p>
+                    <p class="text-xs text-[#71717A]">{{ click.timestamp|time_ago }} &middot; {{ click.country|default:"Unknown" }}</p>
+                </div>
+                <div class="ml-2 flex-shrink-0">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                        {% if click.device == 'mobile' %}bg-[rgba(245,158,11,0.08)] text-[#F59E0B]
+                        {% elif click.device == 'tablet' %}bg-[rgba(34,197,94,0.08)] text-[#22C55E]
+                        {% else %}bg-[rgba(255,255,255,0.06)] text-[#A1A1AA]{% endif %}">
+                        {{ click.device|default:"web" }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-[#71717A] text-center py-8">No clicks recorded yet</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'links/js/charts.js' %}"></script>
+<script>
+    {% if chart_labels and chart_data %}
+    initClicksChart(document.getElementById('clicksChart'), {{ chart_labels|safe }}, {{ chart_data|safe }});
+    {% endif %}
+
+    // ============================================
+    // Chart period buttons
+    // ============================================
+    document.querySelectorAll('[data-days]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('[data-days]').forEach(b => {
+                b.className = 'px-3 py-1.5 rounded-lg text-xs font-medium text-[#71717A] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.06)] transition-all';
+            });
+            this.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-[#212121] text-[#EDEDED] border border-[rgba(255,255,255,0.10)]';
+        });
+    });
+    
+    // Initialize
+</script>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "links/base.html" %}
+{% load static %}
+
+{% block title %}Edit Link - LinkForge{% endblock %}
+{% block page_title %}Edit Link{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="premium-icon premium-icon-lg">
+                <i class="iconoir-edit-pencil text-[#EDEDED]"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-[#EDEDED]">Edit Link</h2>
+                <p class="text-sm text-[#71717A]">Update your campaign details and destination URL</p>
+            </div>
+        </div>
+
+        {% if errors %}
+        <div class="mb-6 p-4 rounded-xl bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.15)]">
+            <div class="flex items-start gap-3">
+                <i class="iconoir-warning-circle text-[#EF4444] mt-0.5"></i>
+                <div>
+                    <h4 class="text-sm font-semibold text-[#FCA5A5] mb-1">Please fix the following errors:</h4>
+                    <ul class="text-sm text-[#EF4444] list-disc list-inside">
+                        {% for error in errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label for="campaign_name" class="block text-sm font-semibold text-[#A1A1AA] mb-2">Campaign Name</label>
+                <input type="text" id="campaign_name" name="campaign_name" value="{{ link.campaign_name }}" 
+                       class="w-full px-4 py-3 bg-[#212121] border border-[rgba(255,255,255,0.10)] rounded-xl text-[#EDEDED] placeholder-[#71717A] focus:ring-2 focus:ring-[rgba(255,255,255,0.08)] focus:border-[rgba(255,255,255,0.25)] transition-all outline-none" placeholder="e.g., Summer Sale - Amazon" required>
+            </div>
+
+            <div>
+                <label for="destination_url" class="block text-sm font-semibold text-[#A1A1AA] mb-2">Destination URL</label>
+                <div class="relative">
+                    <input type="url" id="destination_url" name="destination_url" value="{{ link.destination_url }}"
+                           class="w-full px-4 py-3 pl-10 bg-[#212121] border border-[rgba(255,255,255,0.10)] rounded-xl text-[#EDEDED] placeholder-[#71717A] focus:ring-2 focus:ring-[rgba(255,255,255,0.08)] focus:border-[rgba(255,255,255,0.25)] transition-all outline-none" placeholder="https://..." required>
+                    <i class="iconoir-link text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2"></i>
+                </div>
+            </div>
+
+            <!-- Short URL preview (readonly) -->
+            <div>
+                <label class="block text-sm font-semibold text-[#A1A1AA] mb-2">Short URL</label>
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)]">
+                    <code class="flex-1 text-sm text-[#A1A1AA] font-mono">{{ link.get_short_url }}</code>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[rgba(255,255,255,0.06)] text-[#A1A1AA]">Permanent</span>
+                </div>
+                <p class="mt-1.5 text-xs text-[#F59E0B] flex items-center gap-1">
+                    <i class="iconoir-info-circle text-xs"></i>
+                    The short URL never changes. Only the destination is updated.
+                </p>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="is_active" class="sr-only peer" {% if link.is_active %}checked{% endif %}>
+                    <div class="w-11 h-6 bg-[#333333] peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[rgba(255,255,255,0.08)] rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-[#555555] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#555555]"></div>
+                    <span class="ms-3 text-sm font-medium text-[#A1A1AA]">Link active</span>
+                </label>
+            </div>
+
+            <!-- Stats summary -->
+            <div class="grid grid-cols-3 gap-4 p-4 rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)]">
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-[#EDEDED]">{{ link.clicks.count }}</p>
+                    <p class="text-xs text-[#71717A]">Total Clicks</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-[#EDEDED]">{{ link.created_at|date:"M d" }}</p>
+                    <p class="text-xs text-[#71717A]">Created</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-[#EDEDED]">{{ link.updated_at|date:"M d" }}</p>
+                    <p class="text-xs text-[#71717A]">Updated</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#212121] text-[#EDEDED] text-sm font-semibold rounded-xl hover:bg-[#2A2A2A] transition-all border border-[rgba(255,255,255,0.10)]">
+                    <i class="iconoir-check text-xs"></i>
+                    Save Changes
+                </button>
+                <a href="{% url 'links:dashboard' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-transparent text-[#A1A1AA] text-sm font-medium rounded-xl border border-[rgba(255,255,255,0.10)] hover:bg-[rgba(255,255,255,0.05)] hover:text-[#EDEDED] transition-all">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "links/base.html" %}
+{% load static %}
+
+{% block title %}Create Link - LinkForge{% endblock %}
+{% block page_title %}Create New Link{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="premium-icon premium-icon-lg">
+                <i class="iconoir-plus text-[#EDEDED]"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-[#EDEDED]">Create New Link</h2>
+                <p class="text-sm text-[#71717A]">Shorten an affiliate URL with a custom campaign</p>
+            </div>
+        </div>
+
+        {% if errors %}
+        <div class="mb-6 p-4 rounded-xl bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.15)]">
+            <div class="flex items-start gap-3">
+                <i class="iconoir-warning-circle text-[#EF4444] mt-0.5"></i>
+                <div>
+                    <h4 class="text-sm font-semibold text-[#FCA5A5] mb-1">Please fix the following errors:</h4>
+                    <ul class="text-sm text-[#EF4444] list-disc list-inside">
+                        {% for error in errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+
+            <div>
+                <label for="campaign_name" class="block text-sm font-semibold text-[#A1A1AA] mb-2">Campaign Name</label>
+                <input type="text" id="campaign_name" name="campaign_name" value="{{ campaign_name|default:'' }}" 
+                       class="w-full px-4 py-3 bg-[#212121] border border-[rgba(255,255,255,0.10)] rounded-xl text-[#EDEDED] placeholder-[#71717A] focus:ring-2 focus:ring-[rgba(255,255,255,0.08)] focus:border-[rgba(255,255,255,0.25)] transition-all outline-none" placeholder="e.g., Summer Sale - Amazon" required>
+                <p class="mt-1.5 text-xs text-[#71717A]">Give your campaign a memorable name for easy identification</p>
+            </div>
+
+            <div>
+                <label for="destination_url" class="block text-sm font-semibold text-[#A1A1AA] mb-2">Destination URL</label>
+                <div class="relative">
+                    <input type="url" id="destination_url" name="destination_url" value="{{ destination_url|default:'' }}"
+                           class="w-full px-4 py-3 pl-10 bg-[#212121] border border-[rgba(255,255,255,0.10)] rounded-xl text-[#EDEDED] placeholder-[#71717A] focus:ring-2 focus:ring-[rgba(255,255,255,0.08)] focus:border-[rgba(255,255,255,0.25)] transition-all outline-none" placeholder="https://amazon.in/your-affiliate-link..." required>
+                    <i class="iconoir-link text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2"></i>
+                </div>
+                <p class="mt-1.5 text-xs text-[#71717A]">Paste the full affiliate URL including https://</p>
+            </div>
+
+            <div class="p-4 rounded-xl bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)]">
+                <div class="flex items-start gap-3">
+                    <i class="iconoir-light-bulb text-[#A1A1AA] mt-0.5"></i>
+                    <div>
+                        <p class="text-sm font-medium text-[#EDEDED]">What happens next?</p>
+                        <p class="text-xs text-[#A1A1AA] mt-1">
+                            A unique short URL will be generated automatically. A QR code will also be created for your link. 
+                            You can edit the destination URL later without changing the short link.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#212121] text-[#EDEDED] text-sm font-semibold rounded-xl hover:bg-[#2A2A2A] transition-all border border-[rgba(255,255,255,0.10)]">
+                    <i class="iconoir-plus text-xs"></i>
+                    Create Short Link
+                </button>
+                <a href="{% url 'links:dashboard' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-transparent text-[#A1A1AA] text-sm font-medium rounded-xl border border-[rgba(255,255,255,0.10)] hover:bg-[rgba(255,255,255,0.05)] hover:text-[#EDEDED] transition-all">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

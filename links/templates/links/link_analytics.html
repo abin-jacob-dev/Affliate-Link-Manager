@@ -1,0 +1,244 @@
+{% extends "links/base.html" %}
+{% load static %}
+{% load link_tags %}
+
+{% block title %}Analytics - {{ link.campaign_name }} - LinkForge{% endblock %}
+{% block page_title %}Link Analytics{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="flex items-center gap-2 text-sm text-[#71717A] mb-6">
+    <a href="{% url 'links:dashboard' %}" class="hover:text-[#EDEDED] transition-colors">Dashboard</a>
+    <i class="iconoir-nav-arrow-right text-xs"></i>
+    <span class="text-[#EDEDED] font-medium">{{ link.campaign_name }}</span>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Link Info -->
+    <div class="lg:col-span-1 bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm link-info-body" style="cursor: pointer;">
+        <div class="flex flex-col items-center text-center">
+            {% if link.qr_code %}
+            <div class="mb-4 p-3 bg-[#212121] rounded-xl shadow-sm border border-[rgba(255,255,255,0.06)]">
+                <img src="{{ link.qr_code.url }}" alt="QR Code for {{ link.get_short_url }}" class="w-32 h-32">
+            </div>
+            {% endif %}
+            <h3 class="text-base font-semibold text-[#EDEDED]">{{ link.campaign_name }}</h3>
+            <code class="text-sm text-[#A1A1AA] font-mono mt-1">/{{ link.slug }}</code>
+            <p class="text-xs text-[#71717A] mt-3 truncate max-w-full" title="{{ link.destination_url }}">{{ link.destination_url|truncate_url:50 }}</p>
+            <div class="flex gap-2 mt-4">
+                <button class="copy-btn inline-flex items-center gap-2 px-3 py-2 bg-transparent text-[#A1A1AA] text-xs font-medium rounded-xl border border-[rgba(255,255,255,0.10)] hover:bg-[rgba(255,255,255,0.05)] hover:text-[#EDEDED] transition-all" data-clipboard="{{ link.get_short_url }}">
+                    <i class="iconoir-copy"></i>
+                    Copy
+                </button>
+                <a href="{% url 'links:link_edit' pk=link.id %}" class="inline-flex items-center gap-2 px-3 py-2 bg-transparent text-[#A1A1AA] text-xs font-medium rounded-xl border border-[rgba(255,255,255,0.10)] hover:bg-[rgba(255,255,255,0.05)] hover:text-[#EDEDED] transition-all">
+                    <i class="iconoir-edit-pencil"></i>
+                    Edit
+                </a>
+            </div>
+            <div class="mt-4 pt-4 border-t border-[rgba(255,255,255,0.08)] w-full text-left">
+                <p class="text-xs text-[#71717A] flex items-center justify-between py-1">
+                    <span>Status</span>
+                    {% if link.is_active %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[rgba(34,197,94,0.08)] text-[#22C55E]">Active</span>
+                    {% else %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[rgba(239,68,68,0.08)] text-[#EF4444]">Inactive</span>
+                    {% endif %}
+                </p>
+                <p class="text-xs text-[#71717A] flex items-center justify-between py-1">
+                    <span>Created</span>
+                    <span>{{ link.created_at|date:"M d, Y" }}</span>
+                </p>
+                <p class="text-xs text-[#71717A] flex items-center justify-between py-1">
+                    <span>QR Code</span>
+                    {% if link.qr_code %}
+                    <a href="{{ link.qr_code.url }}" download class="text-[#A1A1AA] hover:text-[#EDEDED]">Download</a>
+                    {% else %}
+                    <span class="text-[#71717A]">N/A</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats & Charts -->
+    <div class="lg:col-span-3 space-y-6">
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm">
+                <p class="text-2xl font-bold text-[#EDEDED]">{{ total_clicks|default:0|format_number }}</p>
+                <p class="text-xs text-[#71717A] mt-1">Total Clicks</p>
+            </div>
+            <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm">
+                <p class="text-2xl font-bold text-[#EDEDED]">{{ today_clicks|default:0|format_number }}</p>
+                <p class="text-xs text-[#71717A] mt-1">Today</p>
+            </div>
+            <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm">
+                <p class="text-2xl font-bold text-[#EDEDED]">{{ week_clicks|default:0|format_number }}</p>
+                <p class="text-xs text-[#71717A] mt-1">This Week</p>
+            </div>
+            <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-xl p-5 shadow-sm">
+                <p class="text-2xl font-bold text-[#EDEDED]">{{ month_clicks|default:0|format_number }}</p>
+                <p class="text-xs text-[#71717A] mt-1">This Month</p>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+            <h3 class="text-lg font-semibold text-[#EDEDED] mb-4">Click Activity</h3>
+            <div class="relative h-[250px]">
+                <canvas id="linkClicksChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Breakdowns -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+                <h4 class="text-sm font-semibold text-[#EDEDED] mb-4">Browsers</h4>
+                <div class="relative h-[180px]">
+                    <canvas id="browserChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+                <h4 class="text-sm font-semibold text-[#EDEDED] mb-4">Operating Systems</h4>
+                <div class="relative h-[180px]">
+                    <canvas id="osChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+                <h4 class="text-sm font-semibold text-[#EDEDED] mb-4">Devices</h4>
+                <div class="relative h-[180px]">
+                    <canvas id="deviceChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Referrers & Countries -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+                <h4 class="text-sm font-semibold text-[#EDEDED] mb-4">Top Referrers</h4>
+                {% if top_referrers %}
+                <div class="space-y-2">
+                    {% for ref in top_referrers %}
+                    <div class="flex items-center justify-between py-2 border-b border-[rgba(255,255,255,0.06)] last:border-0">
+                        <span class="text-sm text-[#A1A1AA] break-all max-w-[60%]">{{ ref.referrer|truncate_url:40 }}</span>
+                        <span class="text-sm font-medium text-[#EDEDED]">{{ ref.count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-sm text-[#71717A] text-center py-6">No referrer data</p>
+                {% endif %}
+            </div>
+            <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+                <h4 class="text-sm font-semibold text-[#EDEDED] mb-4">Top Countries</h4>
+                {% if top_countries %}
+                <div class="space-y-2">
+                    {% for country in top_countries %}
+                    <div class="flex items-center justify-between py-2 border-b border-[rgba(255,255,255,0.06)] last:border-0">
+                        <span class="text-sm text-[#A1A1AA]">{{ country.country }}</span>
+                        <span class="text-sm font-medium text-[#EDEDED]">{{ country.count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-sm text-[#71717A] text-center py-6">No location data</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Clicks Table -->
+        <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+            <h4 class="text-sm font-semibold text-[#EDEDED] mb-4">Recent Clicks</h4>
+            {% if recent_clicks %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-xs font-medium text-[#71717A] uppercase tracking-wider">
+                            <th class="pb-3 pr-4">Time</th>
+                            <th class="pb-3 pr-4">Country</th>
+                            <th class="pb-3 pr-4">Browser</th>
+                            <th class="pb-3 pr-4">OS</th>
+                            <th class="pb-3 pr-4">Device</th>
+                            <th class="pb-3">Referrer</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[rgba(255,255,255,0.06)]">
+                        {% for click in recent_clicks %}
+                        <tr class="hover:bg-[rgba(255,255,255,0.03)] transition-colors">
+                            <td class="py-3 pr-4 text-[#A1A1AA]">
+                                <i class="iconoir-clock text-xs mr-1.5 text-[#71717A]"></i>{{ click.timestamp|time_ago }}
+                            </td>
+                            <td class="py-3 pr-4">
+                                <span class="inline-flex items-center gap-1 text-[#EDEDED]">
+                                    <i class="iconoir-pin text-[#A1A1AA] text-xs"></i>
+                                    {{ click.country|default:"&mdash;" }}
+                                </span>
+                            </td>
+                            <td class="py-3 pr-4">
+                                <span class="inline-flex items-center gap-1 text-[#A1A1AA]">
+                                    <i class="iconoir-compass text-[#71717A] text-xs"></i>
+                                    {{ click.browser|default:"&mdash;" }}
+                                </span>
+                            </td>
+                            <td class="py-3 pr-4">
+                                <span class="inline-flex items-center gap-1 text-[#A1A1AA]">
+                                    <i class="iconoir-laptop text-[#71717A] text-xs"></i>
+                                    {{ click.os|default:"&mdash;" }}
+                                </span>
+                            </td>
+                            <td class="py-3 pr-4">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                    {% if click.device == 'mobile' %}bg-[rgba(245,158,11,0.08)] text-[#F59E0B]
+                                    {% elif click.device == 'tablet' %}bg-[rgba(34,197,94,0.08)] text-[#22C55E]
+                                    {% else %}bg-[rgba(255,255,255,0.06)] text-[#A1A1AA]{% endif %}">
+                                    <i class="{% if click.device == 'mobile' %}iconoir-smartphone-device{% elif click.device == 'tablet' %}iconoir-pen-tablet{% else %}iconoir-hd-display{% endif %} text-xs"></i>
+                                    {{ click.device|default:"&mdash;" }}
+                                </span>
+                            </td>
+                            <td class="py-3 text-[#71717A] truncate max-w-[150px]">{{ click.referrer|truncate_url:30 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-10">
+                <div class="premium-icon premium-icon-xl premium-icon-circle mx-auto mb-3">
+                    <i class="iconoir-eye text-[#A1A1AA]"></i>
+                </div>
+                <p class="text-sm text-[#A1A1AA]">No clicks recorded yet</p>
+                <p class="text-xs text-[#71717A] mt-1">Clicks will appear here once people visit your short URL</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'links/js/charts.js' %}"></script>
+<script>
+    {% if chart_labels and chart_data %}
+    initClicksChart(document.getElementById('linkClicksChart'), {{ chart_labels|safe }}, {{ chart_data|safe }});
+    {% endif %}
+
+    {% if browser_stats %}
+    initPieChart(document.getElementById('browserChart'), {{ browser_stats|safe }}, 'browser');
+    {% endif %}
+
+    {% if os_stats %}
+    initPieChart(document.getElementById('osChart'), {{ os_stats|safe }}, 'os');
+    {% endif %}
+
+    {% if device_stats %}
+    initPieChart(document.getElementById('deviceChart'), {{ device_stats|safe }}, 'device');
+    {% endif %}
+
+    // Copy short URL when clicking the link info card body
+    document.querySelector('.link-info-body')?.addEventListener('click', function(e) {
+        if (e.target.closest('.copy-btn') || e.target.closest('a')) return;
+        const copyBtn = this.querySelector('.copy-btn');
+        if (copyBtn) copyBtn.click();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Server Error | LinkForge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/css/iconoir.css" crossorigin="anonymous">
+</head>
+<body class="font-['Inter'] antialiased bg-[#0A0A0A] text-[#EDEDED] min-h-screen flex items-center justify-center">
+    <div class="text-center px-4">
+        <div class="premium-icon premium-icon-2xl premium-icon-error premium-icon-circle mx-auto mb-8">
+            <span class="text-5xl font-bold text-[#EF4444]">500</span>
+        </div>
+        <h1 class="text-3xl font-bold text-[#EDEDED] mb-3">Something went wrong</h1>
+        <p class="text-[#71717A] mb-8 max-w-md mx-auto">An unexpected error occurred. Our team has been notified. Please try again in a moment.</p>
+        <a href="{% url 'links:dashboard' %}" class="inline-flex items-center gap-2 px-6 py-3 bg-[#212121] text-[#EDEDED] text-sm font-medium rounded-xl hover:bg-[#2A2A2A] transition-all border border-[rgba(255,255,255,0.10)]">
+            <i class="iconoir-undo"></i>
+            Try Again
+        </a>
+    </div>
+</body>
+</html>

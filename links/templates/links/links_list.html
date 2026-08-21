@@ -1,0 +1,382 @@
+{% extends "links/base.html" %}
+{% load static %}
+{% load link_tags %}
+
+{% block title %}All Links - LinkForge{% endblock %}
+{% block page_title %}All Links{% endblock %}
+
+{% block content %}
+<!-- Links Table -->
+<div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl shadow-sm">
+    <!-- Toolbar -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-6 border-b border-[rgba(255,255,255,0.08)]">
+        <h3 class="text-lg font-semibold text-[#EDEDED]">All Links</h3>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+            <!-- Search -->
+            <div class="relative flex-1 sm:flex-none sm:min-w-[200px]">
+                <form action="{% url 'links:links_list' %}" method="GET" id="filter-form-search">
+                    {% if current_status != 'all' %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+                    {% if current_sort != 'created' %}<input type="hidden" name="sort" value="{{ current_sort }}">{% endif %}
+                    {% if current_order != 'desc' %}<input type="hidden" name="order" value="{{ current_order }}">{% endif %}
+                    {% if current_per_page != 15 %}<input type="hidden" name="per_page" value="{{ current_per_page }}">{% endif %}
+                    <i class="iconoir-search absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A] text-xs"></i>
+                    <input type="text" name="q" value="{{ search_query|default:'' }}" placeholder="Search links..." class="w-full sm:w-[200px] pl-8 pr-3 py-2 bg-[#212121] border border-[rgba(255,255,255,0.10)] rounded-lg text-sm text-[#EDEDED] placeholder-[#71717A] focus:ring-2 focus:ring-[rgba(255,255,255,0.08)] focus:border-[rgba(255,255,255,0.25)] transition-all outline-none">
+                </form>
+            </div>
+            
+            <!-- Status Filter -->
+            <div class="relative">
+                <form action="{% url 'links:links_list' %}" method="GET" id="filter-form-status">
+                    {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}">{% endif %}
+                    {% if current_sort != 'created' %}<input type="hidden" name="sort" value="{{ current_sort }}">{% endif %}
+                    {% if current_order != 'desc' %}<input type="hidden" name="order" value="{{ current_order }}">{% endif %}
+                    {% if current_per_page != 15 %}<input type="hidden" name="per_page" value="{{ current_per_page }}">{% endif %}
+                    <select name="status" onchange="this.form.submit()" class="appearance-none pl-8 pr-8 py-2 bg-[#212121] border border-[rgba(255,255,255,0.10)] rounded-lg text-sm text-[#EDEDED] focus:ring-2 focus:ring-[rgba(255,255,255,0.08)] focus:border-[rgba(255,255,255,0.25)] transition-all outline-none cursor-pointer">
+                        <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Status</option>
+                        <option value="active" {% if current_status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                    <i class="iconoir-filter absolute left-2.5 top-1/2 -translate-y-1/2 text-[#71717A] text-xs pointer-events-none"></i>
+                    <i class="iconoir-nav-arrow-down absolute right-2.5 top-1/2 -translate-y-1/2 text-[#71717A] text-[10px] pointer-events-none"></i>
+                </form>
+            </div>
+
+            <!-- Page Size -->
+            <div class="relative">
+                <form action="{% url 'links:links_list' %}" method="GET" id="filter-form-perpage">
+                    {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}">{% endif %}
+                    {% if current_sort != 'created' %}<input type="hidden" name="sort" value="{{ current_sort }}">{% endif %}
+                    {% if current_order != 'desc' %}<input type="hidden" name="order" value="{{ current_order }}">{% endif %}
+                    {% if current_status != 'all' %}<input type="hidden" name="status" value="{{ current_status }}">{% endif %}
+                    <select name="per_page" onchange="this.form.submit()" class="appearance-none pl-3 pr-8 py-2 bg-[#212121] border border-[rgba(255,255,255,0.10)] rounded-lg text-sm text-[#EDEDED] focus:ring-2 focus:ring-[rgba(255,255,255,0.08)] focus:border-[rgba(255,255,255,0.25)] transition-all outline-none cursor-pointer">
+                        <option value="10" {% if current_per_page == 10 %}selected{% endif %}>10</option>
+                        <option value="15" {% if current_per_page == 15 %}selected{% endif %}>15</option>
+                        <option value="25" {% if current_per_page == 25 %}selected{% endif %}>25</option>
+                        <option value="50" {% if current_per_page == 50 %}selected{% endif %}>50</option>
+                    </select>
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs pointer-events-none hidden sm:inline"></span>
+                    <i class="iconoir-nav-arrow-down absolute right-2.5 top-1/2 -translate-y-1/2 text-[#71717A] text-[10px] pointer-events-none"></i>
+                </form>
+            </div>
+
+            <a href="{% url 'links:link_create' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-[#212121] text-[#EDEDED] text-sm font-medium rounded-lg hover:bg-[#2A2A2A] transition-all border border-[rgba(255,255,255,0.10)] whitespace-nowrap">
+                <i class="iconoir-plus text-xs"></i>
+                New Link
+            </a>
+        </div>
+    </div>
+
+    {% if page_obj %}
+    <!-- Active Filters Info -->
+    {% if current_status != 'all' or search_query %}
+    <div class="flex items-center gap-2 px-6 py-2.5 bg-[rgba(255,255,255,0.03)] border-b border-[rgba(255,255,255,0.06)]">
+        <i class="iconoir-filter-alt text-[#A1A1AA] text-xs"></i>
+        <span class="text-xs text-[#71717A]">
+            {% if search_query %}Search: "<span class="text-[#EDEDED]">{{ search_query }}</span>"{% endif %}
+            {% if search_query and current_status != 'all' %} &middot; {% endif %}
+            {% if current_status != 'all' %}Status: <span class="text-[#EDEDED]">{{ current_status|title }}</span>{% endif %}
+        </span>
+        <a href="{% url 'links:links_list' %}" class="ml-auto text-xs text-[#71717A] hover:text-[#EDEDED] transition-colors">
+            <i class="iconoir-xmark mr-1"></i>Clear
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Table (desktop) -->
+    <div class="hidden md:block">
+        <table class="w-full table-fixed" id="links-table" style="min-width:0;width:100%;">
+            <colgroup>
+                <col style="width:22%">
+                <col style="width:10%">
+                <col style="width:auto">
+                <col style="width:7%">
+                <col style="width:5%">
+                <col style="width:11%">
+                <col style="width:130px">
+            </colgroup>
+            <thead>
+                <tr class="text-left text-xs font-medium text-[#71717A] uppercase tracking-wider">
+                    <th class="pb-3 pr-3 pt-4 pl-6 cursor-pointer select-none group" data-sortable="name" data-current-sort="{{ current_sort }}" data-current-order="{{ current_order }}">
+                        <div class="flex items-center gap-1.5 hover:text-[#EDEDED] transition-colors">
+                            Campaign
+                            <span class="sort-indicator text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="iconoir-sort"></i>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="pb-3 pr-3 pt-4">Short URL</th>
+                    <th class="pb-3 pr-3 pt-4">Destination</th>
+                    <th class="pb-3 pr-3 pt-4 text-center cursor-pointer select-none group" data-sortable="clicks" data-current-sort="{{ current_sort }}" data-current-order="{{ current_order }}">
+                        <div class="inline-flex items-center gap-1 hover:text-[#EDEDED] transition-colors">
+                            Clicks
+                            <span class="sort-indicator text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="iconoir-sort"></i>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="pb-3 pr-3 pt-4 text-center">QR</th>
+                    <th class="pb-3 pr-3 pt-4 cursor-pointer select-none group" data-sortable="created" data-current-sort="{{ current_sort }}" data-current-order="{{ current_order }}">
+                        <div class="inline-flex items-center gap-1 hover:text-[#EDEDED] transition-colors">
+                            Created
+                            <span class="sort-indicator text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="iconoir-sort"></i>
+                            </span>
+                        </div>
+                    </th>
+                    <th class="pb-3 pt-4 pr-6 text-right">Actions</th>
+                </tr>
+            <tbody class="divide-y divide-[rgba(255,255,255,0.06)]">
+                {% for link in page_obj %}
+                <tr class="link-row hover:bg-[rgba(255,255,255,0.03)] transition-colors" data-clipboard="{{ link.get_short_url }}" data-slug="/{{ link.slug }}" title="Click to copy short URL">
+                    <td class="py-3 pr-3 pl-6">
+                        <a href="{% url 'links:link_analytics' pk=link.id %}" class="analytics-link text-sm font-semibold text-[#EDEDED] hover:text-white transition-colors break-words" title="View detailed analytics">
+                            <i class="iconoir-stats-up-square mr-1.5 text-[#A1A1AA] text-xs"></i>{{ link.campaign_name }}
+                        </a>
+                    </td>
+                    <td class="py-3 pr-3">
+                        <code class="text-sm text-[#A1A1AA] font-mono break-all">/{{ link.slug }}</code>
+                    </td>
+                    <td class="py-3 pr-3">
+                        <span class="text-sm text-[#71717A] truncate block" title="{{ link.destination_url }}">{{ link.destination_url|truncate_url:45 }}</span>
+                    </td>
+                    <td class="py-3 pr-3 text-center whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1 text-sm font-semibold text-[#EDEDED]">
+                            <i class="iconoir-cursor-pointer text-[#A1A1AA] text-xs"></i>
+                            {{ link.click_count|default:0|format_number }}
+                        </span>
+                    </td>
+                    <td class="py-3 pr-3 text-center whitespace-nowrap">
+                        <div class="action-zone">
+                        {% if link.qr_code %}
+                        <a href="{{ link.qr_code.url }}" download class="text-[#71717A] hover:text-[#EDEDED] transition-all duration-200 hover:scale-110 inline-block" title="Download QR Code">
+                            <i class="iconoir-qr-code text-lg"></i>
+                        </a>
+                        {% else %}
+                        <span class="text-[#555555] inline-block"><i class="iconoir-qr-code text-lg"></i></span>
+                        {% endif %}
+                        </div>
+                    </td>
+                    <td class="py-3 pr-3 whitespace-nowrap">
+                        <span class="text-sm text-[#71717A]"><i class="iconoir-calendar text-xs mr-1"></i>{{ link.created_at|date:"M d, Y" }}</span>
+                    </td>
+                    <td class="py-3 text-right action-zone whitespace-nowrap">
+                        <div class="flex items-center justify-end gap-0.5">
+                            <a href="{{ link.get_short_url }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-[#71717A] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.06)] transition-all duration-200 hover:scale-110" title="Open in new tab">
+                                <i class="iconoir-new-tab text-xs"></i>
+                            </a>
+                            <a href="{% url 'links:link_analytics' pk=link.id %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-[#71717A] hover:text-[#22C55E] hover:bg-[rgba(34,197,94,0.08)] transition-all duration-200 hover:scale-110" title="View detailed analytics">
+                                <i class="iconoir-stats-up-square text-xs"></i>
+                            </a>
+                            <a href="{% url 'links:link_edit' pk=link.id %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-[#71717A] hover:text-[#F59E0B] hover:bg-[rgba(245,158,11,0.08)] transition-all duration-200 hover:scale-110" title="Edit link">
+                                <i class="iconoir-edit-pencil text-xs"></i>
+                            </a>
+                            <button class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-[#71717A] hover:text-[#EF4444] hover:bg-[rgba(239,68,68,0.08)] transition-all duration-200 hover:scale-110" onclick="event.stopPropagation(); confirmDelete('{{ link.id }}', '{{ link.campaign_name }}')" title="Delete link">
+                                <i class="iconoir-trash text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cards (mobile) -->
+    <div class="md:hidden space-y-3">
+        {% for link in page_obj %}
+        <div class="link-card p-4 rounded-xl bg-[rgba(255,255,255,0.03)] hover:bg-[#212121] transition-all duration-200" data-clipboard="{{ link.get_short_url }}">
+            <div class="flex items-start justify-between mb-2">
+                <a href="{% url 'links:link_analytics' pk=link.id %}" class="analytics-link text-sm font-semibold text-[#EDEDED] hover:text-white transition-colors" title="View detailed analytics">
+                    <i class="iconoir-stats-up-square mr-1 text-[#A1A1AA]"></i>{{ link.campaign_name }}
+                </a>
+                <div class="flex items-center gap-1 action-zone">
+                    <a href="{% url 'links:link_edit' pk=link.id %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-[#71717A] hover:text-[#F59E0B] hover:bg-[rgba(245,158,11,0.08)] transition-all duration-200 hover:scale-110" title="Edit">
+                        <i class="iconoir-edit-pencil text-xs"></i>
+                    </a>
+                    <button class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-[#71717A] hover:text-[#EF4444] hover:bg-[rgba(239,68,68,0.08)] transition-all duration-200 hover:scale-110" onclick="event.stopPropagation(); confirmDelete('{{ link.id }}', '{{ link.campaign_name }}')" title="Delete">
+                        <i class="iconoir-trash text-xs"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 mb-2">
+                <i class="iconoir-link text-[#A1A1AA] text-xs"></i>
+                <code class="text-xs text-[#A1A1AA] font-mono">/{{ link.slug }}</code>
+            </div>
+            <p class="text-xs text-[#71717A] truncate mb-2" title="{{ link.destination_url }}">{{ link.destination_url|truncate_url:50 }}</p>
+            <div class="flex items-center justify-between text-xs">
+                <span class="inline-flex items-center gap-1 text-[#71717A]">
+                    <i class="iconoir-cursor-pointer text-[#A1A1AA]"></i>
+                    {{ link.click_count|default:0 }} clicks
+                </span>
+                <span class="text-[#71717A]">
+                    <i class="iconoir-calendar mr-1"></i>{{ link.created_at|date:"M d, Y" }}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination (preserves all filters, sliding window) -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-[rgba(255,255,255,0.08)]">
+        <p class="text-sm text-[#71717A]">
+            Showing <span class="font-medium text-[#A1A1AA]">{{ page_obj.start_index }}</span> &ndash; <span class="font-medium text-[#A1A1AA]">{{ page_obj.end_index }}</span> of <span class="font-medium text-[#A1A1AA]">{{ page_obj.paginator.count }}</span>
+        </p>
+        <div class="flex items-center gap-1.5">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if query_params %}&{{ query_params }}{% endif %}" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-[#A1A1AA] bg-[#212121] border border-[rgba(255,255,255,0.10)] hover:bg-[#2A2A2A] hover:text-[#EDEDED] transition-all">
+                <i class="iconoir-nav-arrow-left text-xs mr-1.5"></i> Prev
+            </a>
+            {% endif %}
+            
+            {% with cp=page_obj.number tp=page_obj.paginator.num_pages %}
+            {% for p in page_obj.paginator.page_range %}
+                {% if p == 1 and cp > 4 %}<span class="text-[#555555] px-1 text-xs">&hellip;</span>{% endif %}
+                {% if p >= cp|add:'-2' and p <= cp|add:'2' or p == 1 or p == tp %}
+                    {% if p == cp %}
+                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-semibold bg-[rgba(255,255,255,0.08)] text-[#EDEDED] border border-[rgba(255,255,255,0.12)]">{{ p }}</span>
+                    {% elif p > cp|add:'-3' and p < cp|add:'3' %}
+                    <a href="?page={{ p }}{% if query_params %}&{{ query_params }}{% endif %}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium text-[#71717A] hover:text-[#EDEDED] hover:bg-[rgba(255,255,255,0.06)] transition-all">{{ p }}</a>
+                    {% endif %}
+                {% endif %}
+                {% if p == tp and cp < tp|add:'-3' %}<span class="text-[#555555] px-1 text-xs">&hellip;</span>{% endif %}
+            {% endfor %}
+            {% endwith %}
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if query_params %}&{{ query_params }}{% endif %}" class="inline-flex items-center px-3 py-2 rounded-lg text-sm font-medium text-[#A1A1AA] bg-[#212121] border border-[rgba(255,255,255,0.10)] hover:bg-[#2A2A2A] hover:text-[#EDEDED] transition-all">
+                Next <i class="iconoir-nav-arrow-right text-xs ml-1.5"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-16">
+        <div class="premium-icon premium-icon-2xl mx-auto mb-6">
+            <i class="iconoir-link text-[#A1A1AA]"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-[#EDEDED] mb-2">No links yet</h3>
+        <p class="text-[#71717A] mb-8 max-w-md mx-auto">Create your first shortened affiliate link to get started with tracking and analytics.</p>
+        <a href="{% url 'links:link_create' %}" class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#212121] text-[#EDEDED] text-sm font-medium rounded-xl hover:bg-[#2A2A2A] transition-all border border-[rgba(255,255,255,0.10)]">
+            <i class="iconoir-plus text-xs"></i>
+            Create Your First Link
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
+    <div class="flex items-center justify-center min-h-full p-4">
+        <div class="w-full max-w-md bg-[#171717] rounded-2xl shadow-2xl shadow-black/40 border border-[rgba(255,255,255,0.10)] p-6">
+            <div class="premium-icon premium-icon-lg premium-icon-circle premium-icon-error mx-auto mb-4">
+                <i class="iconoir-warning-circle text-[#EF4444]"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-[#EDEDED] text-center mb-2">Delete Link</h3>
+            <p class="text-sm text-[#A1A1AA] text-center mb-6">
+                Are you sure you want to delete "<span id="delete-link-name" class="font-medium text-[#EDEDED]"></span>"? This action cannot be undone and all associated analytics data will be permanently removed.
+            </p>
+            <form id="delete-form" method="POST" class="flex gap-3">
+                {% csrf_token %}
+                <button type="button" onclick="closeDeleteModal()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-transparent text-[#A1A1AA] text-sm font-medium rounded-xl border border-[rgba(255,255,255,0.10)] hover:bg-[rgba(255,255,255,0.05)] hover:text-[#EDEDED] transition-all flex-1 justify-center">Cancel</button>
+                <button type="submit" class="flex-1 px-4 py-2.5 bg-[#EF4444] hover:bg-[#DC2626] text-white text-sm font-medium rounded-xl transition-all duration-200">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Delete confirmation
+    function confirmDelete(linkId, linkName) {
+        document.getElementById('delete-link-name').textContent = linkName;
+        document.getElementById('delete-form').action = '/delete/' + linkId + '/';
+        document.getElementById('delete-modal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('delete-modal').classList.add('hidden');
+    }
+
+    // ============================================
+    // Server-side Sort on Column Header Click
+    // ============================================
+    function initSortableHeaders() {
+        document.querySelectorAll('th[data-sortable]').forEach(header => {
+            header.addEventListener('click', function() {
+                const sortField = this.dataset.sortable;
+                const currentSort = this.dataset.currentSort;
+                const currentOrder = this.dataset.currentOrder;
+                
+                // Toggle order if same field, else default to desc
+                const newOrder = (sortField === currentSort && currentOrder === 'desc') ? 'asc' : 'desc';
+                
+                // Build URL with all current params + new sort/order
+                const params = new URLSearchParams(window.location.search);
+                params.set('sort', sortField);
+                params.set('order', newOrder);
+                params.delete('page'); // Reset to page 1 on sort change
+                
+                window.location.href = window.location.pathname + '?' + params.toString();
+            });
+        });
+        
+        // Update sort indicator icons to reflect current sort state
+        document.querySelectorAll('th[data-sortable]').forEach(header => {
+            const sortField = header.dataset.sortable;
+            const currentSort = header.dataset.currentSort;
+            const currentOrder = header.dataset.currentOrder;
+            const indicator = header.querySelector('.sort-indicator');
+            
+            if (sortField === currentSort && indicator) {
+                indicator.classList.remove('opacity-0', 'group-hover:opacity-100');
+                indicator.classList.add('opacity-100', 'text-[#EDEDED]');
+                if (currentOrder === 'asc') {
+                    indicator.innerHTML = '<i class="iconoir-arrow-up text-[#EDEDED]"></i>';
+                } else {
+                    indicator.innerHTML = '<i class="iconoir-arrow-down text-[#EDEDED]"></i>';
+                }
+            }
+        });
+    }
+
+    // ============================================
+    // Search with debounce (only when idle and has text)
+    // ============================================
+    function initSearchInput() {
+        const searchInput = document.querySelector('#filter-form-search input[name="q"]');
+        if (!searchInput) return;
+        
+        let debounceTimer;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            if (this.value.length === 0) {
+                return;
+            }
+            if (this.value.length >= 2) {
+                debounceTimer = setTimeout(() => {
+                    this.form.submit();
+                }, 800);
+            }
+        });
+        
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(debounceTimer);
+                this.form.submit();
+            }
+        });
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        initSortableHeaders();
+        initSearchInput();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "links/base.html" %}
+{% load static %}
+
+{% block title %}Settings - LinkForge{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-[#171717] border border-[rgba(255,255,255,0.08)] rounded-2xl p-6 shadow-sm">
+        <div class="space-y-3 text-sm text-[#A1A1AA]">
+            <div class="flex items-center justify-between py-2 border-b border-[rgba(255,255,255,0.06)]">
+                <span>Version</span>
+                <span class="font-medium text-[#EDEDED]">1.0.0</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-[rgba(255,255,255,0.06)]">
+                <span>Database</span>
+                <span class="font-medium text-[#EDEDED]">{% if database %}{{ database }}{% else %}SQLite{% endif %}</span>
+            </div>
+            <div class="flex items-center justify-between py-2">
+                <span>Python / Django</span>
+                <span class="font-medium text-[#EDEDED]">Python 3.12 / Django 6.0</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}{% endblock %}
